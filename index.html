@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>socket</title>
+</head>
+
+<body>
+    <h1>hello </h1>
+    <form>
+        <input type="text">
+    </form>
+    <div></div>
+    <script>
+        const div = document.querySelector("div")
+        const form = document.querySelector("form")
+        const input = document.querySelector("input")
+        var connection = new WebSocket('ws:localhost:3000');
+
+        connection.onopen = function () {
+            // connection is opened and ready to use
+            console.log("opened websocket")
+            form.onsubmit = (e) => {
+                e.preventDefault()
+                connection.send(input.value)
+                input.value = ""
+            }
+        };
+
+        connection.onerror = function (error) {
+            // an error occurred when sending/receiving data
+            console.error("error with websocket : " +
+                error)
+
+        };
+
+        connection.onmessage = function (message) {
+            // try to decode json (I assume that each message
+            // from server is json)
+            try {
+                var json = JSON.parse(message.data);
+            } catch (e) {
+                console.log('This doesn\'t look like a valid JSON: ',
+                    message.data);
+                return;
+            }
+        }
+    </script>
+</body>
+
+</html>
