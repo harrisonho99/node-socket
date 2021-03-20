@@ -5,48 +5,101 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>socket</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 1rem;
+            margin: 0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input {
+            width: 300px;
+            height: 30px;
+            margin: 0.5rem;
+        }
+
+        button {
+            height: 30px;
+            margin: 0.5rem;
+            width: 100px;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>hello </h1>
+    <h1>Enter message </h1>
     <form>
-        <input type="text">
+        <div>
+
+            <input type="text">
+        </div>
+        <div>
+
+            <button type="submit">enter</button>
+        </div>
     </form>
-    <div></div>
+    <ul id="container">
+    </ul>
     <script>
-        const div = document.querySelector("div")
+        const title = document.querySelector("h1")
+        const ul = document.querySelector("#container")
         const form = document.querySelector("form")
         const input = document.querySelector("input")
-        var connection = new WebSocket('ws:localhost:3000');
+        var connection = new WebSocket('ws:192.168.30.107:3000');
 
+        function renderMessage(data) {
+            ul.innerHTML = ""
+            var json = JSON.parse(data);
+            json.forEach(message => {
+                const li = document.createElement("li")
+                const content = document.createTextNode(message.text)
+                li.appendChild(content)
+                ul.insertAdjacentElement("afterbegin", li)
+            })
+        }
         connection.onopen = function () {
             // connection is opened and ready to use
-            console.log("opened websocket")
+            console.log("opened socket")
             form.onsubmit = (e) => {
                 e.preventDefault()
                 connection.send(input.value)
                 input.value = ""
             }
+            // fetch the data went first connected!
+            connection.send("")
         };
 
         connection.onerror = function (error) {
             // an error occurred when sending/receiving data
             console.error("error with websocket : " +
                 error)
-
+            title.innerText = "some thing went wrong!"
         };
 
         connection.onmessage = function (message) {
-            // try to decode json (I assume that each message
-            // from server is json)
+            // try to parse json
             try {
-                var json = JSON.parse(message.data);
+                renderMessage(message.data)
             } catch (e) {
-                console.log('This doesn\'t look like a valid JSON: ',
-                    message.data);
+                //console.log('This doesn\'t look like a valid JSON ');
                 return;
             }
+        }
+        connection.onclose = () => {
+            console.log("closed socket")
+            title.innerText = "Connection closed, reload!"
         }
     </script>
 </body>
